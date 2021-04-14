@@ -4,6 +4,11 @@ import networkx as nx
 
 from common import transform_incident_edge_weights, strength, degree, integrate
 
+"""
+An implementation of the Disparity Filter proposed by Serrano et al. in
+'Extracting the multiscale backbone of complex weighted networks'
+"""
+
 def get_normalise_fn(G, v):
     v_strength = strength(G, v)
     return lambda weight: weight / v_strength
