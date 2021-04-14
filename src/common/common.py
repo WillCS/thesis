@@ -21,23 +21,14 @@ def integrate(l: float, u: float,
     else:
         return quad(fn, l, u)
 
-def transform_incident_edge_weights(G, v, f) -> Iterable:
+def transform_incident_edge_weights(G, v, f: Callable[[float], float]) -> Iterable:
     return {v2: f(G[v][v2]["weight"]) for v2 in G[v]}
 
 def strength(G, v) -> float:
-    return sum(G[v][v2]["weight"] for v2 in G[v])
+    return sum(G[v][u]["weight"] for u in G[v])
+
+def degree(G, v) -> int:
+    return len(G[v])
 
 # print(integrate(0.5, 1, integrand(10)))
 # print(integrate(0.5, 1, indefinite(10), indefinite = True))
-
-graph = nx.Graph()
-graph.add_nodes_from(["a", "b", "c", "d"])
-graph.add_edge("a", "b", weight = 1)
-graph.add_edge("a", "c", weight = 0.5)
-
-print(nx.edges(graph, "a"))
-print(graph["a"])
-
-print(strength(graph, "a"))
-
-print(transform_incident_edge_weights(graph, "a", lambda a: a / (strength(graph, "a"))))
