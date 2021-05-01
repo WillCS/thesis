@@ -21,9 +21,6 @@ def integrate(l: float, u: float,
     else:
         return quad(fn, l, u)
 
-def transform_incident_edge_weights(G, v, f: Callable[[float], float]) -> Iterable:
-    return {v2: f(G[v][v2]["weight"]) for v2 in G[v]}
-
 def strength(G, v) -> float:
     return sum(G[v][u]["weight"] for u in G[v])
 
