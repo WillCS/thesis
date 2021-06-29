@@ -18,7 +18,7 @@ def get_us_airport_locations(filename: str = "./resources/us_airport_locations.c
         locations: Dict[str, Tuple[float, float]] = {}
 
         for i, row in df.iterrows():
-            locations[row["iata_code"]] = (row["lat"], row["long"])
+            locations[row["iata_code"]] = (row["long"], row["lat"])
 
         return locations
     else:
@@ -27,12 +27,12 @@ def get_us_airport_locations(filename: str = "./resources/us_airport_locations.c
         locations: Dict[str, Tuple[float, float]] = {}
 
         for i, row in index_df.iterrows():
-            locations[row["iata_code"]] = (row["latitude_deg"], row["longitude_deg"])
+            locations[row["iata_code"]] = (row["longitude_deg"], row["latitude_deg"])
 
         df_construction = {
             "iata_code": list(locations.keys()),
-            "lat":       list(x[0] for x in locations.values()),
-            "long":      list(x[1] for x in locations.values())
+            "lat":       list(x[1] for x in locations.values()),
+            "long":      list(x[0] for x in locations.values())
         }
 
         new_df = pd.DataFrame(df_construction, columns = ["iata_code", "lat", "long"])

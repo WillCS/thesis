@@ -26,7 +26,7 @@ def disparity(G, p: float):
     indefinite_pdfs = { v: get_indefinite_pdf(G, v) for v in G }
 
     # The locally normalised edge weights.
-    # Each edge appears twice, each time normalised with
+    # Each edge appears twice in undirected graphs, each time normalised with
     # respect to the "starting" edge
     normalised_weights = {
         (v, u) : normalise_fns[v](G[v][u]["weight"])
@@ -56,7 +56,3 @@ def disparity(G, p: float):
     backbone.add_weighted_edges_from(significant_edges)
 
     return backbone
-
-# normalisation!!
-# correlation
-# covariance - dot product? subtract mean

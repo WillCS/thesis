@@ -27,5 +27,18 @@ def strength(G, v) -> float:
 def degree(G, v) -> int:
     return len(G[v])
 
+def map_graph(G, fn: Callable[[float], float], weight: str = "weight"):
+    mapped_weights = [
+        (v, u, fn(G[v][u][weight]))
+        for v in G
+        for u in G[v]
+    ]
+
+    new_graph = nx.Graph()
+    new_graph.add_nodes_from(G)
+    new_graph.add_weighted_edges_from(mapped_weights)
+
+    return new_graph
+
 # print(integrate(0.5, 1, integrand(10)))
 # print(integrate(0.5, 1, indefinite(10), indefinite = True))
