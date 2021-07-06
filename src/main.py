@@ -8,7 +8,8 @@ from matplotlib import pyplot
 from backbones import (
     disparity,
     threshold,
-    high_salience_skeleton
+    high_salience_skeleton,
+    noise_corrected
 )
 from common.common import map_graph
 
@@ -16,7 +17,8 @@ from data import (
     get_us_airport_network,
     get_us_airport_locations,
     get_undefined_airports,
-    get_graph_from_csv_adjacency_matrix
+    get_graph_from_csv_adjacency_matrix,
+    write_adjacency_matrix_to_csv
 )
 
 # pyplot.figure()
@@ -29,8 +31,10 @@ from data import (
 # d - data type
 # s - data source
 # t - title
+# v - visualisation type
+# o - output filename
 
-options, args = getopt.getopt(sys.argv[1:], "b:d:s:p:t:")
+options, args = getopt.getopt(sys.argv[1:], "b:d:s:p:t:v:o:")
 options_dict = dict(options)
 
 def get_graph(data_type: str, source: Optional[str] = None):
@@ -48,9 +52,7 @@ def get_graph(data_type: str, source: Optional[str] = None):
         return (graph, positions)
 
 if "-b" not in options_dict.keys() or "-d" not in options_dict.keys():
-    print("Usage: python main/src BACKBONE_TYPE DATA_TYPE [source]")
-    print("where BACKBONE_TYPE := { threshold | disparity | hss }")
-    print("where DATA_TYPE     := { us_airport | adj }")
+    print("Try again")
 else:
     data_source = None
     if "-s" in options_dict:
@@ -59,6 +61,10 @@ else:
     p_val = None
     if "-p" in options_dict:
         p_val = float(options_dict["-p"])
+
+    vis_type = "normal"
+    if "-v" in options_dict:
+        vis_type = options_dict["-v"]
 
     backbone_type = options_dict["-b"]
     data_type     = options_dict["-d"]
@@ -103,6 +109,15 @@ else:
 
         title.append("High Salience Skeleton")
         title.append(f"t = {p_val}")
+    elif backbone_type == "nc":
+        if p_val is None:
+            p_val = 1.28
+
+        backbone = noise_corrected(graph, p_val)
+        display_weight = True
+
+        title.append("Noise Corrected Backbone")
+        title.append(f"delta = {p_val}")
 
     pyplot.title(" - ".join(title))
 
@@ -113,10 +128,22 @@ else:
 
         normalised_backbone_weight_list = [x / max_backbone_weight for x in backbone_weights.values()]
 
-        nx.draw_networkx(backbone, positions, width = normalised_backbone_weight_list, with_labels = False, node_size = 1)
+        if vis_type == "invert":
+            normalised_backbone_weight_list = [1 - x for x in normalised_backbone_weight_list]
+
+        if vis_type == "spectrum":
+            colours = [(x, 0, 1 - x) for x in normalised_backbone_weight_list]
+            nx.draw_networkx(backbone, positions, edge_color = colours, with_labels = False, node_size = 1)
+        else:
+            nx.draw_networkx(backbone, positions, width = normalised_backbone_weight_list, with_labels = False, node_size = 1)
     else:
         nx.draw_networkx(backbone, positions, with_labels = False, node_size = 1)
     pyplot.show()
+
+    if "-o" in options_dict:
+        filename = options_dict["-o"]
+        write_adjacency_matrix_to_csv(backbone, filename)
+
 
 # get_undefined_airports(2006)
 

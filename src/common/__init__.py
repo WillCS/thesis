@@ -1,1 +1,1 @@
-from .common import strength, integrate, degree, map_graph
+from .common import strength, integrate, degree, map_graph, incoming_strength, outgoing_strength

@@ -24,6 +24,12 @@ def integrate(l: float, u: float,
 def strength(G, v) -> float:
     return sum(G[v][u]["weight"] for u in G[v])
 
+def incoming_strength(G, v) -> float:
+    return sum(G[u][v]["weight"] for u in G if v in G[u])
+
+def outgoing_strength(G, v) -> float:
+    return sum(G[v][u]["weight"] for u in G[v])
+
 def degree(G, v) -> int:
     return len(G[v])
 
