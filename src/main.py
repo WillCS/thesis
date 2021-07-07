@@ -4,6 +4,7 @@ from typing import Optional
 
 import networkx as nx
 from matplotlib import pyplot
+from matplotlib.widgets import Slider
 
 from backbones import (
     disparity,
@@ -33,8 +34,9 @@ from data import (
 # t - title
 # v - visualisation type
 # o - output filename
+# z - slider
 
-options, args = getopt.getopt(sys.argv[1:], "b:d:s:p:t:v:o:")
+options, args = getopt.getopt(sys.argv[1:], "b:d:s:p:t:v:o:z")
 options_dict = dict(options)
 
 def get_graph(data_type: str, source: Optional[str] = None):
@@ -124,7 +126,9 @@ else:
     if display_weight:
         backbone_weights     = nx.get_edge_attributes(backbone, "weight")
         backbone_weight_list = list(backbone_weights.values())
-        max_backbone_weight  = max(backbone_weight_list)
+        max_backbone_weight = 1
+        if len(backbone_weight_list) > 0:
+            max_backbone_weight  = max(backbone_weight_list)
 
         normalised_backbone_weight_list = [x / max_backbone_weight for x in backbone_weights.values()]
 
