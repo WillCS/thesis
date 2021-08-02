@@ -10,7 +10,8 @@ from backbones import (
     disparity,
     threshold,
     high_salience_skeleton,
-    noise_corrected
+    noise_corrected,
+    polya
 )
 from common.common import map_graph
 
@@ -101,6 +102,14 @@ else:
         backbone = disparity(graph, p_val)
 
         title.append("Disparity Backbone")
+        title.append(f"p = {p_val}")
+    elif backbone_type == "polya":
+        if p_val is None:
+            p_val = 0.003
+
+        backbone = polya(graph, p_val, 1)
+
+        title.append("Polya Backbone")
         title.append(f"p = {p_val}")
     elif backbone_type == "hss":
         if p_val is None:
