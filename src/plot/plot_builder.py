@@ -6,10 +6,12 @@ from matplotlib.widgets import Slider, TextBox
 import networkx as nx
 import numpy    as np
 
+from plot.pos.position import PositionStrategy
+
 class PlotBuilder():
-    def __init__(self, graph: nx.Graph, pos) -> PlotBuilder:
+    def __init__(self, graph: nx.Graph, position_strategy: PositionStrategy) -> PlotBuilder:
         self.graph        = graph
-        self.set_vertex_positions(pos)
+        self.set_position_strategy(position_strategy)
         self.set_edges(self.graph.edges)
 
         self.colormap = plot.get_cmap("gist_rainbow")
@@ -19,8 +21,8 @@ class PlotBuilder():
         self.fig.canvas.mpl_disconnect(self.fig.canvas.manager.key_press_handler_id)
         self.widgets = {}
 
-    def set_vertex_positions(self, pos) -> PlotBuilder:
-        self.pos = pos
+    def set_position_strategy(self, position_strategy: PositionStrategy) -> PlotBuilder:
+        self.position_strategy = position_strategy
 
         return self
 
@@ -115,7 +117,10 @@ class PlotBuilder():
         self.ax.set_xlim(xlim)
         self.ax.set_ylim(ylim)
 
-        nx.draw_networkx(self.graph, self.pos,
+        positions = self.position_strategy.generate_positions(
+            self.graph, self.edges, self.clusters)
+
+        nx.draw_networkx(self.graph, positions,
             width      = self.edge_widths,
             ax         = self.ax,
             edgelist   = self.edges,

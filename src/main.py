@@ -12,16 +12,17 @@ from data import (
     get_graph_from_csv_adjacency_matrix,
     get_clusterings_from_csv
 )
+from plot.pos import PositionStrategy, UndirectedRadialPositionStrategy
 
 graph       = get_graph_from_csv_adjacency_matrix("./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv")
-pos         = nx.circular_layout(graph)
 clusterings = get_clusterings_from_csv("./resources/plant_genetics/ATvAC_contrast6_ATcorr_clusters.csv")
 
-strategy: BackboneStrategy = DisparityBackboneStrategy(graph)
+backbone_strategy: BackboneStrategy = DisparityBackboneStrategy(graph)
+position_strategy: PositionStrategy = UndirectedRadialPositionStrategy(by_cluster = True, by_strength = True)
 
-backbone = strategy.extract_backbone()
+backbone = backbone_strategy.extract_backbone()
 
-plot_builder: PlotBuilder = PlotBuilder(backbone, pos)
+plot_builder: PlotBuilder = PlotBuilder(backbone, position_strategy)
 
 def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
     p_val = 1
