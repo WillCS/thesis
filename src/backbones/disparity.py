@@ -1,8 +1,10 @@
-from typing import Callable
+from __future__ import annotations
 
 import networkx as nx
 
 from common import strength, degree, integrate
+
+from .backbone import BackboneStrategy
 
 """
 An implementation of the Disparity Filter proposed by Serrano et al. in
@@ -11,27 +13,34 @@ An implementation of the Disparity Filter proposed by Serrano et al. in
 Linear time, Linear space.
 """
 
-def disparity(G, p: float):
-    for (u, v) in G.edges():
-        G[u][v]["p"] = 1
+class DisparityBackboneStrategy(BackboneStrategy):
+    def __init__(self, graph: nx.Graph) -> DisparityBackboneStrategy:
+        self.graph = graph
 
-    for v in G:
-        v_strength = strength(G, v)
-        v_deg      = degree(G, v)
-        for u in G[v]:
-            w = G[v][u]["weight"] / v_strength
-            p_value = integrate(
-                w, 1,
-                lambda x: -(1 - x) ** (v_deg - 1),
-                indefinite = True
-            )
+    def extract_backbone(self) -> nx.Graph:
+        # Initialise the p values for all edges to be 1.
+        for (v, u) in self.graph.edges():
+            self.graph[u][v]["p"] = 1
+            
+        # Compute the p value for every edge.
+        for v in self.graph:
+            v_strength = strength(self.graph, v)
+            v_deg      = degree(self.graph,   v)
 
-            G[v][u]["p"] = min([p_value, G[v][u]["p"]])
+            for u in self.graph[v]:
+                w = self.graph[v][u]["weight"] / v_strength
+                p_value = integrate(
+                    w, 1,
+                    lambda x: -(1 - x) ** (v_deg - 1),
+                    indefinite = True
+                )
 
-    # backbone = nx.Graph()
-    # backbone.add_nodes_from(G)
-    # for (v, u) in G.edges():
-    #     if G[v][u]["p"] < p:
-    #         backbone.add_edge(v, u, weight = G[v][u]["weight"])
+                # If the p value we found for this edge is less than the
+                # one we already had for it, udpate its p value to be the
+                # new one.
+                self.graph[v][u]["p"] = min([
+                    p_value,
+                    self.graph[v][u]["p"]
+                ])
 
-    return G
+        return self.graph
