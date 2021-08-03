@@ -23,7 +23,14 @@ backbone = strategy.extract_backbone()
 
 plot_builder: PlotBuilder = PlotBuilder(backbone, pos)
 
-def update_p_slider(p_val: float, graph: nx.Graph, draw_plot: Callable) -> None:
+def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
+    p_val = 1
+
+    try:
+        p_val = float(p_str)
+    except ValueError:
+        pass
+
     edges = [(v, u) for (v, u) in graph.edges() if graph[v][u]["p"] < p_val]
     plot_builder.set_edges(edges)
     draw_plot(
@@ -31,12 +38,10 @@ def update_p_slider(p_val: float, graph: nx.Graph, draw_plot: Callable) -> None:
         node_size   = 50
     )
 
-plot_builder.add_slider(
+plot_builder.add_textbox(
     label     = "p",
-    min_val   = 0,
-    max_val   = 0.003,
-    init_val  = 0.003,
-    update_fn = update_p_slider,
+    initial   = "1",
+    update_fn = update_p_textbox,
     loc       = (0.2, 0.05, 0.2, 0.03)
 )
 
