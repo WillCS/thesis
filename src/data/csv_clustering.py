@@ -13,13 +13,14 @@ def get_clusterings_from_csv(filename: str):
         
         row_index = 0
         for row in reader:
+            vertex_name = row[0]
             for i in range(2, len(row)):
                 label      = top_row[i]
                 n_clusters = int(label[1:])
 
                 cluster_id = int(row[i]) - 1
 
-                clusters[i][cluster_id].append(row_index)
+                clusters[i][cluster_id].append(vertex_name)
 
             row_index += 1
 

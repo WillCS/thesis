@@ -5,6 +5,7 @@ from backbones import (
     BackboneStrategy,
     DisparityBackboneStrategy
 )
+from data.csv_writer import write_adjacency_matrix_to_csv
 
 from plot import PlotBuilder
 
@@ -12,17 +13,21 @@ from data import (
     get_graph_from_csv_adjacency_matrix,
     get_clusterings_from_csv
 )
+from plot.label import LabelStrategy, RadialLabelStrategy
 from plot.pos import PositionStrategy, UndirectedRadialPositionStrategy
 
-graph       = get_graph_from_csv_adjacency_matrix("./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv")
+graph       = get_graph_from_csv_adjacency_matrix("./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv", absolute = True)
 clusterings = get_clusterings_from_csv("./resources/plant_genetics/ATvAC_contrast6_ATcorr_clusters.csv")
 
 backbone_strategy: BackboneStrategy = DisparityBackboneStrategy(graph)
 position_strategy: PositionStrategy = UndirectedRadialPositionStrategy(by_cluster = True, by_strength = True)
+label_strategy:    LabelStrategy    = RadialLabelStrategy(1.2)
 
 backbone = backbone_strategy.extract_backbone()
 
 plot_builder: PlotBuilder = PlotBuilder(backbone, position_strategy)
+
+plot_builder.set_node_label_strategy(label_strategy)
 
 def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
     p_val = 1
@@ -35,7 +40,6 @@ def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
     edges = [(v, u) for (v, u) in graph.edges() if graph[v][u]["p"] < p_val]
     plot_builder.set_edges(edges)
     draw_plot(
-        with_labels = False,
         node_size   = 50
     )
 
@@ -59,7 +63,6 @@ def update_cluster_slider(n: float, graph: nx.Graph, draw_plot: Callable) -> Non
         plot_builder.set_clusters(clusterings[n_clusters])
 
     draw_plot(
-        with_labels = False,
         node_size   = 50
     )
 
@@ -73,7 +76,19 @@ plot_builder.add_slider(
     valfmt    = "%i"
 )
 
+def export_adjacency_matrix(g: nx.Graph, edges, clusters) -> None:
+    graph = nx.Graph()
+    graph.add_nodes_from(g.nodes)
+    for (v, u) in edges:
+        graph.add_edge(v, u, weight = g[v][u]["weight"])
+    write_adjacency_matrix_to_csv(graph, "adjacency_matrix.csv")
+
+plot_builder.add_button(
+    label = "Export",
+    fn    = export_adjacency_matrix,
+    loc   = (0.45, 0.05, 0.1, 0.03)
+)
+
 plot_builder.draw(
-    with_labels = False,
     node_size   = 50
 )

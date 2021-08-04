@@ -5,7 +5,7 @@ from math import cos, sin
 import numpy as np
 import networkx as nx
 
-from common.common import strength
+from common import Clustering, strength
 
 from .position import PositionStrategy
 
@@ -30,13 +30,13 @@ class UndirectedRadialPositionStrategy(PositionStrategy):
 
     def generate_positions(self, 
         graph:    nx.Graph,
-        edges:    Optional[List] = None,
-        clusters: Optional[List] = None
+        edges:    Optional[List]       = None,
+        clusters: Optional[Clustering] = None
     ) -> Dict[Any, np.ndarray]:
         n_vertices   = graph.order()
         vertex_order = [
             sorted(c, key = lambda v: self.filtered_strength(v, graph, edges))
-            for c in clusters
+            for c in clusters.get_clusters()
         ]
         
         # flatten the list
