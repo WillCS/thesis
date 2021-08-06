@@ -36,7 +36,7 @@ class UndirectedRadialPositionStrategy(PositionStrategy):
         n_vertices   = graph.order()
         vertex_order = [
             sorted(c, key = lambda v: self.filtered_strength(v, graph, edges))
-            for c in clusters.get_clusters()
+            for c in clusters.get_cluster_list()
         ]
         
         # flatten the list

@@ -1,29 +1,62 @@
 from __future__ import annotations
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 class Clustering():
-    def __init__(self, clusters) -> Clustering:
-        self.clusters = clusters
-        self.reverse_map = {}
-        
-        for i, c in enumerate(self.clusters):
-            for v in c:
-                self.reverse_map[v] = i
+    """
+    A class for wrapping clusterings of vertices so that
+    they can easily be queried / interacted with in
+    a variety of ways.
+    """
 
-    def get_cluster(self, v) -> Optional[int]:
+    def __init__(self, clusters: Dict) -> Clustering:
+        """
+        A dictionary with cluster names as keys and lists of vertices as
+        values is needed to initialise the clustering.
+        """
+
+        # Map from cluster names to clusters
+        self.cluster_map  = clusters
+        # List of clusters - i.e. a list of lists
+        self.cluster_list = list(clusters.values())
+        # Map from vertices to the cluster they are in
+        self.reverse_map  = {}
+        
+        for k, c in self.cluster_map.items():
+            for v in c:
+                self.reverse_map[v] = k
+
+    def get_cluster_of(self, v) -> Optional[int]:
+        """
+        Get the cluster a vertex belongs to,
+        or None if the vertex is not present
+        in the clustering.
+        """
         if v in self.reverse_map.keys():
             return self.reverse_map[v]
         else:
             return None
 
-    def get_vertices(self, c) -> Optional[List]:
-        if c < len(self.clusters) and c >= 0:
-            return self.clusters[c]
+    def get_cluster_named(self, c) -> Optional[int]:
+        """
+        Get the cluster with the given name,
+        or None if there is no cluster with
+        that name.
+        """
+        if c in self.cluster_map.keys():
+            return self.cluster_map[c]
         else:
             return None
 
-    def get_clusters(self) -> List:
-        return self.clusters
+    def get_cluster_list(self) -> List:
+        """
+        Get a list of all clusters. That is,
+        a list containing lists of vertices,
+        each of which is a cluster.
+        """
+        return self.cluster_list
 
-    def num_clusters(self) -> int:
-        return len(self.clusters)
+    def get_num_clusters(self) -> int:
+        """
+        Get the number of clusters in this clustering.
+        """
+        return len(self.cluster_list)
