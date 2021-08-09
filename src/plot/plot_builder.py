@@ -6,8 +6,8 @@ from matplotlib import pyplot as plot
 from matplotlib.widgets import Slider, TextBox, Button
 import networkx as nx
 import numpy    as np
-from common import Clustering
 
+from common import Clustering
 from plot.label.label import LabelStrategy
 from plot.pos.position import PositionStrategy
 
@@ -24,7 +24,7 @@ class PlotBuilder():
         A PlotBuilder needs a graph to visualise, and a strategy for positioning
         the vertices in the visualisation. 
         """
-        self.graph        = graph
+        self.graph = graph
         self.set_position_strategy(position_strategy)
         self.set_edges(self.graph.edges)
 

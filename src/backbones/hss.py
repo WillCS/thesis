@@ -46,3 +46,6 @@ class HighSalienceSkeletonBackboneStrategy(BackboneStrategy):
             self.graph[v][u]["salience"] = salience[v,u]["weight"]
 
         return self.graph
+
+    def correct_p_value(self, p: float) -> float:
+        return p

@@ -3,16 +3,19 @@ import networkx as nx
 
 from backbones import (
     BackboneStrategy,
-    DisparityBackboneStrategy
+    DisparityBackboneStrategy,
+    PolyaBackboneStrategy
 )
 
 from data import (
     get_graph_from_csv_adjacency_matrix,
-    get_multiple_clusterings_from_csv
+    get_multiple_clusterings_from_csv,
+    get_us_airport_network,
+    get_us_airport_locations
 )
 
 from plot.label import LabelStrategy, RadialLabelStrategy
-from plot.pos  import PositionStrategy, UndirectedRadialPositionStrategy
+from plot.pos  import PositionStrategy, UndirectedRadialPositionStrategy, PresetPositionStrategy
 from plot import PlotBuilder
 
 graph       = get_graph_from_csv_adjacency_matrix("./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv", absolute = True)
@@ -21,7 +24,7 @@ clusterings = get_multiple_clusterings_from_csv("./resources/plant_genetics/ATvA
         cluster_cols = [f"n{n}" for n in range(2,33)]
 )
 
-backbone_strategy: BackboneStrategy = DisparityBackboneStrategy(graph)
+backbone_strategy: BackboneStrategy = PolyaBackboneStrategy(graph, 1, integer_weights = False)
 position_strategy: PositionStrategy = UndirectedRadialPositionStrategy(by_cluster = True, by_strength = True)
 label_strategy:    LabelStrategy    = RadialLabelStrategy(1.2)
 
@@ -39,7 +42,9 @@ def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
     except ValueError:
         pass
 
-    edges = [(v, u) for (v, u) in graph.edges() if graph[v][u]["p"] < p_val]
+    corrected_p_val = backbone_strategy.correct_p_value(p_val)
+
+    edges = [(v, u) for (v, u) in graph.edges() if graph[v][u]["p"] < corrected_p_val]
     plot_builder.set_edges(edges)
     draw_plot(
         node_size   = 50

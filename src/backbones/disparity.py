@@ -20,7 +20,7 @@ class DisparityBackboneStrategy(BackboneStrategy):
     def extract_backbone(self) -> nx.Graph:
         # Initialise the p values for all edges to be 1.
         for (v, u) in self.graph.edges():
-            self.graph[u][v]["p"] = 1
+            self.graph[v][u]["p"] = 1
             
         # Compute the p value for every edge.
         for v in self.graph:
@@ -44,3 +44,6 @@ class DisparityBackboneStrategy(BackboneStrategy):
                 ])
 
         return self.graph
+
+    def correct_p_value(self, p: float) -> float:
+        return p

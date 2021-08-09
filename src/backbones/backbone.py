@@ -6,3 +6,7 @@ class BackboneStrategy(ABC):
     @abstractmethod
     def extract_backbone(self) -> nx.Graph:
         pass
+
+    @abstractmethod
+    def correct_p_value(self, p: float) -> float:
+        pass
