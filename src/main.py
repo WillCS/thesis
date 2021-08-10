@@ -24,7 +24,7 @@ clusterings = get_multiple_clusterings_from_csv("./resources/plant_genetics/ATvA
         cluster_cols = [f"n{n}" for n in range(2,33)]
 )
 
-backbone_strategy: BackboneStrategy = PolyaBackboneStrategy(graph, 1, integer_weights = False)
+backbone_strategy: BackboneStrategy = DisparityBackboneStrategy(graph)
 position_strategy: PositionStrategy = UndirectedRadialPositionStrategy(by_cluster = True, by_strength = True)
 label_strategy:    LabelStrategy    = RadialLabelStrategy(1.2)
 
