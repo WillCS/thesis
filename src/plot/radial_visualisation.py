@@ -93,31 +93,14 @@ class RadialVisualisation(Visualisation):
 
         self.normalised_edge_weights = list([self.get_graph()[v][u]["weight"] / max_weight for (v, u) in self.edges])
 
-    def get_vertex_positions(self) -> Dict[Any, Tuple[float, float]]:
-        return self.vertex_positions
-
-    def get_vertex_labels(self) -> Dict[Any, str]:
-        return self.vertex_labels
-
-    def get_vertex_label_positions(self) -> Dict[Any, Tuple[float, float]]:
-        return self.vertex_label_positions
-        
-    def get_vertex_label_rotations(self) -> Dict[Any, float]:
-        return self.vertex_label_rotations
-
-    def get_vertex_colours(self) -> List[Tuple[float, float, float]]:
-        return self.vertex_colours
-
-    def get_edge_widths(self) -> List[float]:
-        return self.normalised_edge_weights
 
     def draw(self, ax: plot.Axes, **kwargs) -> None:
         self.update()
 
-        positions = self.get_vertex_positions()
-        colours   = self.get_vertex_colours()
-        edges     = self.get_edges_to_display()
-        widths    = self.get_edge_widths()
+        positions = self.vertex_positions
+        colours   = self.vertex_colours
+        edges     = self.edges
+        widths    = self.normalised_edge_weights
 
         graph     = self.get_graph()
 
@@ -132,9 +115,9 @@ class RadialVisualisation(Visualisation):
             **kwargs
         )
 
-        label_text  = self.get_vertex_labels()
-        label_pos   = self.get_vertex_label_positions()
-        label_angle = self.get_vertex_label_rotations()
+        label_text  = self.vertex_labels
+        label_pos   = self.vertex_label_positions
+        label_angle = self.vertex_label_rotations
         
         handles = nx.draw_networkx_labels(graph,
             ax        = ax,

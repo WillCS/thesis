@@ -24,29 +24,5 @@ class Visualisation(ABC):
         pass
 
     @abstractmethod
-    def get_vertex_positions(self) -> Dict[Any, Tuple[float, float]]:
-        pass
-
-    @abstractmethod
-    def get_vertex_labels(self) -> Dict[Any, str]:
-        pass
-
-    @abstractmethod
-    def get_vertex_label_positions(self) -> Dict[Any, Tuple[float, float]]:
-        pass
-
-    @abstractmethod
-    def get_vertex_label_rotations(self) -> Dict[Any, float]:
-        pass
-
-    @abstractmethod
-    def get_vertex_colours(self) -> List[Tuple[float, float, float]]:
-        pass
-
-    @abstractmethod
-    def get_edge_widths(self) -> List[float]:
-        pass
-
-    @abstractmethod
     def draw(self, ax: plot.Axes) -> None:
         pass
