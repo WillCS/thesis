@@ -14,11 +14,8 @@ def proximity(weight) -> float:
         return float("inf")
 
 class HighSalienceSkeletonBackboneStrategy(BackboneStrategy):
-    def __init__(self, graph: nx.Graph) -> HighSalienceSkeletonBackboneStrategy:
-        self.graph = graph
-
-    def extract_backbone(self) -> nx.Graph:
-        proximity_graph = map_graph(self.graph, proximity)
+    def extract_backbone(self, graph: nx.Graph) -> nx.Graph:
+        proximity_graph = map_graph(graph, proximity)
         shortest_paths  = dict(nx.all_pairs_dijkstra_path(proximity_graph))
 
         shortest_path_trees = {}
@@ -42,10 +39,10 @@ class HighSalienceSkeletonBackboneStrategy(BackboneStrategy):
             for u in proximity_graph[v]
         }
 
-        for (v, u) in self.graph:
-            self.graph[v][u]["salience"] = salience[v,u]["weight"]
+        for (v, u) in graph:
+            graph[v][u]["salience"] = salience[v,u]["weight"]
 
-        return self.graph
+        return graph
 
-    def correct_p_value(self, p: float) -> float:
+    def correct_p_value(self, graph: nx.Graph, p: float) -> float:
         return p

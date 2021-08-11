@@ -10,31 +10,35 @@ from backbones import (
 from data import (
     get_graph_from_csv_adjacency_matrix,
     get_multiple_clusterings_from_csv,
+    get_clusters_from_csv,
     get_us_airport_network,
-    get_us_airport_locations
+    get_us_airport_locations,
+    DataProvider,
+    GeneticDataProvider
 )
 
-from plot.label import LabelStrategy, RadialLabelStrategy
-from plot.pos  import PositionStrategy, UndirectedRadialPositionStrategy, PresetPositionStrategy
-from plot import PlotBuilder
+from plot import PlotBuilder, Visualisation, RadialVisualisation
 
-graph       = get_graph_from_csv_adjacency_matrix("./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv", absolute = True)
-clusterings = get_multiple_clusterings_from_csv("./resources/plant_genetics/ATvAC_contrast6_ATcorr_clusters.csv",
-        vertex_col  = "gene_num",
-        cluster_cols = [f"n{n}" for n in range(2,33)]
+data_provider: DataProvider = GeneticDataProvider()
+
+# clusterings = get_multiple_clusterings_from_csv("./resources/plant_genetics/ATvAC_contrast6_ATcorr_clusters.csv",
+#         vertex_col  = "gene_num",
+#         cluster_cols = [f"n{n}" for n in range(2,33)]
+# )
+
+clusterings = get_clusters_from_csv("./resources/plant_genetics/AT_gene_family_2021-08-04.csv",
+    vertex_col  = "gene_num",
+    cluster_col = "cl"
 )
 
-backbone_strategy: BackboneStrategy = DisparityBackboneStrategy(graph)
-position_strategy: PositionStrategy = UndirectedRadialPositionStrategy(by_cluster = True, by_strength = True)
-label_strategy:    LabelStrategy    = RadialLabelStrategy(1.2)
+backbone_strategy: BackboneStrategy = PolyaBackboneStrategy(a = 1, integer_weights = False)
+# backbone_strategy: BackboneStrategy = DisparityBackboneStrategy()
+visualisation:     Visualisation    = RadialVisualisation(data_provider, backbone_strategy)
+plot_builder:      PlotBuilder      = PlotBuilder(visualisation)
 
-backbone = backbone_strategy.extract_backbone()
+visualisation.set_clusters(clusterings)
 
-plot_builder: PlotBuilder = PlotBuilder(backbone, position_strategy)
-
-plot_builder.set_node_label_strategy(label_strategy)
-
-def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
+def update_p_textbox(p_str: str) -> None:
     p_val = 1
 
     try:
@@ -42,13 +46,14 @@ def update_p_textbox(p_str: str, graph: nx.Graph, draw_plot: Callable) -> None:
     except ValueError:
         pass
 
-    corrected_p_val = backbone_strategy.correct_p_value(p_val)
+    graph = visualisation.get_graph()
 
-    edges = [(v, u) for (v, u) in graph.edges() if graph[v][u]["p"] < corrected_p_val]
-    plot_builder.set_edges(edges)
-    draw_plot(
-        node_size   = 50
-    )
+    corrected_p_val = backbone_strategy.correct_p_value(graph, p_val)
+
+    edges = [(v, u) for (v, u) in graph.edges if graph[v][u]["p"] < corrected_p_val]
+    visualisation.set_edges_to_display(edges)
+
+    plot_builder.redraw()
 
 plot_builder.add_textbox(
     label     = "p",
@@ -57,31 +62,30 @@ plot_builder.add_textbox(
     loc       = (0.2, 0.05, 0.2, 0.03)
 )
 
-def update_cluster_slider(n: float, graph: nx.Graph, draw_plot: Callable) -> None:
-    n_clusters = int(n)
-    if n_clusters < 1:
-        n_clusters = 1
-    elif n_clusters > len(clusterings):
-        n_clusters = len(clusterings)
+# def update_cluster_slider(n: float) -> None:
+#     n_clusters = int(n)
 
-    if n_clusters == 1:
-        plot_builder.set_clusters(None)
-    else:
-        plot_builder.set_clusters(clusterings[f"n{n_clusters}"])
+#     if n_clusters < 1:
+#         n_clusters = 1
+#     elif n_clusters > len(clusterings):
+#         n_clusters = len(clusterings)
 
-    draw_plot(
-        node_size   = 50
-    )
+#     if n_clusters == 1:
+#         visualisation.set_clusters(None)
+#     else:
+#         visualisation.set_clusters(clusterings[f"n{n_clusters}"])
 
-plot_builder.add_slider(
-    label     = "Clusters",
-    min_val   = 1,
-    max_val   = len(clusterings) + 1,
-    init_val  = 1,
-    update_fn = update_cluster_slider,
-    loc       = (0.6, 0.05, 0.2, 0.03),
-    valfmt    = "%i"
-)
+#     plot_builder.redraw()
+
+# plot_builder.add_slider(
+#     label     = "Clusters",
+#     min_val   = 1,
+#     max_val   = len(clusterings) + 1,
+#     init_val  = 1,
+#     update_fn = update_cluster_slider,
+#     loc       = (0.6, 0.05, 0.2, 0.03),
+#     valfmt    = "%i"
+# )
 
 # def export_adjacency_matrix(g: nx.Graph, edges, clusters) -> None:
 #     graph = nx.Graph()
