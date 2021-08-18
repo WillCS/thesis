@@ -1,45 +1,44 @@
 from __future__ import annotations
 from typing import Any, Tuple, Dict, List, Optional
 from math import cos, sin, pi, atan2
-from csv import DictReader
+from os import listdir
 
 import networkx as nx
 
 from backbones import BackboneStrategy
-from common import Clustering, strength
+from common import Clustering, strength, print_progress_bar
 
-from .csv_adjacency import get_graph_from_csv_adjacency_matrix
+from .csv_edge_list import get_graph_from_csv_edge_list
 from .data_provider import DataProvider, Label
 
-ADJACENCY_MATRIX_FILE = "./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv"
-FAMILY_FILE           = "./resources/plant_genetics/AT_gene_family_2021-08-04.csv"
+DATA_FOLDER = "./resources/comms_test"
 
 def filtered_strength(v, graph: nx.Graph, edges: List) -> float:
     if edges is None:
         return strength(graph, v)
     else:
         return sum([
-            graph[x][y]["weight"] for (x, y) in edges if x == v or x == y
+            graph[x][y]["weight"] for (x, y) in edges if x == v and x in graph and y in graph[x]
         ])
 
-def get_vertex_names() -> Dict[str, str]:
-    names = {}
-    with open(FAMILY_FILE) as csvfile:
-        reader = DictReader(csvfile)
+class CommunicationsDataProvider(DataProvider):
+    def __init__(self) -> CommunicationsDataProvider:
+        self.graphs = []
 
-        for row in reader:
-            names[row["gene_num"]] = row["Gene_Id"]
+        for file in listdir(DATA_FOLDER):
+            graph = get_graph_from_csv_edge_list(f"{DATA_FOLDER}/{file}", directed = True)
+            self.graphs.append(graph)
 
-    return names
-
-class GeneticDataProvider(DataProvider):
-    def __init__(self) -> GeneticDataProvider:
-        self.graph = get_graph_from_csv_adjacency_matrix(ADJACENCY_MATRIX_FILE, absolute = True)
-
-        self.names = get_vertex_names()
+        self.current_graph = 0
 
     def get_graph(self) -> nx.Graph:
-        return self.graph
+        return self.graphs[self.current_graph]
+
+    def get_num_graphs(self) -> int:
+        return len(self.graphs)
+
+    def set_current_graph(self, index: int) -> None:
+        self.current_graph = index
 
     def get_vertex_positions(self,
         visible_edges: Optional[List]       = None,
@@ -66,8 +65,10 @@ class GeneticDataProvider(DataProvider):
         labels = {}
         vertex_positions = self.get_vertex_positions(visible_edges, clustering)
 
+        print(vertex_positions)
+
         for i, v in enumerate(self.get_graph().nodes):
-            text  = f"{self.names[v]}({clustering.get_cluster_of(v)})"
+            text  = f"{v}"
             x, y  = vertex_positions[v]
             pos   = (x * 1.2, y * 1.2)
             angle = atan2(y, x) * (180 / pi)
@@ -77,5 +78,7 @@ class GeneticDataProvider(DataProvider):
         return labels
 
     def apply_backbone_strategy(self, backbone: BackboneStrategy) -> None:
-        backbone.extract_backbone(self.graph)
+        for i, graph in enumerate(self.graphs):
+            backbone.extract_backbone(graph)
+            print_progress_bar("Computed backbone", i + 1, len(self.graphs))
     

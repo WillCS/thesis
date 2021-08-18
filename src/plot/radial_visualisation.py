@@ -20,7 +20,7 @@ class RadialVisualisation(Visualisation):
         self.data_provider     = data_provider
         self.backbone_strategy = backbone_strategy
 
-        self.backbone = backbone_strategy.extract_backbone(data_provider.get_graph())
+        self.data_provider.apply_backbone_strategy(self.backbone_strategy)
 
         self.vertex_positions       = {}
         self.vertex_colours         = []
@@ -34,7 +34,7 @@ class RadialVisualisation(Visualisation):
         self.set_edges_to_display(None)
 
     def get_graph(self) -> nx.Graph:
-        return self.backbone
+        return self.data_provider.get_graph()
     
     def set_clusters(self, clusters: Optional[Clustering]) -> None:
         if clusters is None:

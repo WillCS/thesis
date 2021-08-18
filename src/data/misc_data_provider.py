@@ -1,39 +1,33 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-
+from __future__ import annotations
 from typing import Any, Tuple, Dict, List, Optional
 
 import networkx as nx
 
 from backbones import BackboneStrategy
-from common import Clustering
+from common import Clustering, strength
 
-@dataclass
-class Label():
-    text:  str
-    pos:   Tuple[float, float]
-    angle: float
-    
-class DataProvider(ABC):
-    @abstractmethod
+from .csv_adjacency import get_graph_from_csv_adjacency_matrix
+from .data_provider import DataProvider, Label
+
+class MiscDataProvider(DataProvider):
+    def __init__(self, adjacency_matrix_file: str) -> MiscDataProvider:
+        self.graph = get_graph_from_csv_adjacency_matrix(adjacency_matrix_file, vertex_name_row = False)
+
     def get_graph(self) -> nx.Graph:
-        pass
+        return self.graph
 
-    @abstractmethod
     def get_vertex_positions(self,
         visible_edges: Optional[List]       = None,
         clustering:    Optional[Clustering] = None,
-    ) -> Dict[Any, Tuple[float, float]]:
+    ) -> Dict[Any, Tuple(float, float)]:
         pass
 
-    @abstractmethod
     def get_vertex_labels(self,
         visible_edges: Optional[List]       = None,
         clustering:    Optional[Clustering] = None,
     ) -> Dict[Any, Label]:
         pass
 
-    @abstractmethod
     def apply_backbone_strategy(self, backbone: BackboneStrategy) -> None:
-        pass
+        backbone.extract_backbone(self.graph)
     

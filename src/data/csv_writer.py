@@ -3,7 +3,7 @@ import os
 
 import networkx as nx
 
-def write_adjacency_matrix_to_csv(G, filename: str):
+def write_adjacency_matrix_to_csv(G, filename: str, attribute: str = "weight"):
     if os.path.isfile(filename):
         raise FileExistsError()
     else:
@@ -14,7 +14,7 @@ def write_adjacency_matrix_to_csv(G, filename: str):
                 row = []
                 for u in G:
                     if u in G[v]:
-                        row.append(G[v][u]["weight"])
+                        row.append(G[v][u][attribute])
                     else:
                         row.append(0)
 
