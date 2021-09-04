@@ -1,14 +1,18 @@
-from statistics import mean
-from typing import List, Optional
+from statistics import mean, stdev
+from typing import List, Optional, Tuple
+from math import pow, sqrt
 
 from matplotlib import pyplot as plot
+from matplotlib.widgets import Slider
 import networkx as nx
 import numpy    as np
 from scipy.optimize import curve_fit
 from scipy.optimize.minpack import leastsq
+import scipy.stats
 
 from backbones import DisparityBackboneStrategy
 from backbones.backbone import BackboneStrategy
+from common.progress_bar import print_progress_bar
 from data      import GeneticDataProvider, RandomGeneticDataProvider
 
 genetic_data_provider = GeneticDataProvider()
@@ -79,35 +83,81 @@ ps = [p for p in np.linspace(0, 1, 100)]
 def get_exponents(graph: nx.Graph, ps: List[float]) -> List[float]:
     return [fit_power_law(graph, p) for p in ps]
 
+def estimate_distribution(samples: List[float]) -> Tuple[float, float]:
+    average = mean(samples)
+    std_dev = stdev(samples, xbar = average)
+
+    return (average, std_dev)
+
+def plot_normal_distribution(average: float, std_dev: float) -> None:
+    x = np.linspace(average - 5 * std_dev, average + 5 * std_dev, 100)
+    y = scipy.stats.norm.pdf(x, average, std_dev)
+
+    plot.plot(x, y)
+
 real_exponents = get_exponents(genetic_graph, ps)
 
 def get_random_backbone(strategy: BackboneStrategy) -> nx.Graph:
     provider = RandomGeneticDataProvider()
     provider.apply_backbone_strategy(strategy)
+
     return provider.get_graph()
 
-random_backbones = [get_random_backbone(backbone_strategy) for i in range(100)]
-random_exponents = [get_exponents(graph, ps) for graph in random_backbones]
+backbones = 1000
+
+random_backbones = []
+
+for i in range(backbones):
+    print_progress_bar(f"Computing backbone", i + 1, backbones)
+    random_backbones.append(get_random_backbone(backbone_strategy))
+
+random_exponents = []
+for i in range(backbones):
+    print_progress_bar(f"Fitting power laws to one backbone", i + 1, backbones)
+    
+    random_exponents.append(get_exponents(random_backbones[i], ps))
 
 mean_exponents = []
 for (i, p) in enumerate(ps):
+    print_progress_bar(f"Averaging exponents for one p value", i + 1, len(ps))
+
     exps = [e[i] for e in random_exponents if e[i] is not None]
     if len(exps) > 0:
         mean_exponents.append(mean(exps))
     else:
         mean_exponents.append(None)
 
-diff = len(ps) - len(mean_exponents)
-other_ps = ps[diff:]
+diff = sum([1 for x in mean_exponents if x is None])
+
+yerr = []
+
+for slice in range(diff, len(random_exponents[0])):
+    print_progress_bar(f"Estimating distribution for one p value", slice + 1 - diff, len(random_exponents[0]) - diff)
+
+    samples = [random_exponents[i][slice] for i in range(len(random_exponents)) if random_exponents[i][slice] is not None]
+    if len(samples) < 2:
+        yerr.append(0)
+    else:
+        average, std_dev = estimate_distribution(samples)
+        yerr.append(std_dev * 3)
 
 plot.subplot(2, 1, 1)
-plot.plot(other_ps, mean_exponents)
+plot.plot(ps[diff:], mean_exponents[diff:])
+plot.errorbar(ps[diff:], mean_exponents[diff:], yerr = yerr, fmt = 'none')
 plot.plot(ps, real_exponents)
 plot.legend(["mean", "real"])
 plot.xticks(np.linspace(0, 1, 11))
 plot.grid()
 
+slice = 10
+
 plot.subplot(2, 1, 2)
-plot.hist([random_exponents[i][50] for i in range(len(random_exponents))], 20)
-plot.plot(np.linspace(real_exponents[50], real_exponents[50]), np.linspace(0, 12))
+plot.hist([random_exponents[i][slice] for i in range(len(random_exponents))], 50)
+
+y_min, y_max = plot.ylim()
+
+plot.plot(np.linspace(real_exponents[slice], real_exponents[slice]), np.linspace(y_min, y_max))
+average, std_dev = estimate_distribution([random_exponents[i][slice] for i in range(len(random_exponents))])
+# plot_normal_distribution(average, std_dev)
+
 plot.show()
