@@ -39,6 +39,17 @@ def degree_sequence(graph: nx.Graph, p = 0.1) -> List[int]:
 
     return [x for x in sorted(degrees.values(), reverse = True) if x > 0]
 
+def strength_sequence(graph: nx.Graph, p = 0.1) -> List[int]:
+    weights = { v: 0 for v in graph.nodes }
+
+    for (v, u) in graph.edges:
+        if graph[v][u]["p"] < p:
+            weight = graph[v][u]["weight"]
+            weights[v] += weight
+            weights[u] += weight
+
+    return [x for x in sorted(weights.values(), reverse = True) if x > 0]
+
 def size(graph: nx.Graph, p = 0.1) -> int:
     size = 0
     for (v, u) in graph.edges:
@@ -51,7 +62,7 @@ def power_law(x, a, b):
     return a * np.power(x, b)
 
 def fit_power_law(graph: nx.Graph, p: float = 0.1, should_plot = False) -> Optional[float]:
-    seq = np.array(degree_sequence(graph, p))
+    seq = np.array(strength_sequence(graph, p))
     xs  = np.array([x + 1 for x in range(len(seq))])
 
     logx = np.log10(xs)
@@ -103,7 +114,7 @@ def get_random_backbone(strategy: BackboneStrategy) -> nx.Graph:
 
     return provider.get_graph()
 
-backbones = 1000
+backbones = 100
 
 random_backbones = []
 
@@ -113,13 +124,13 @@ for i in range(backbones):
 
 random_exponents = []
 for i in range(backbones):
-    print_progress_bar(f"Fitting power laws to one backbone", i + 1, backbones)
+    print_progress_bar(f"Fitting power laws", i + 1, backbones)
     
     random_exponents.append(get_exponents(random_backbones[i], ps))
 
 mean_exponents = []
 for (i, p) in enumerate(ps):
-    print_progress_bar(f"Averaging exponents for one p value", i + 1, len(ps))
+    print_progress_bar(f"Averaging exponents", i + 1, len(ps))
 
     exps = [e[i] for e in random_exponents if e[i] is not None]
     if len(exps) > 0:
@@ -132,7 +143,7 @@ diff = sum([1 for x in mean_exponents if x is None])
 yerr = []
 
 for slice in range(diff, len(random_exponents[0])):
-    print_progress_bar(f"Estimating distribution for one p value", slice + 1 - diff, len(random_exponents[0]) - diff)
+    print_progress_bar(f"Estimating distributions", slice + 1 - diff, len(random_exponents[0]) - diff)
 
     samples = [random_exponents[i][slice] for i in range(len(random_exponents)) if random_exponents[i][slice] is not None]
     if len(samples) < 2:
