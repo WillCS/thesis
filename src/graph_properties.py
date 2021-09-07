@@ -92,7 +92,7 @@ def get_random_backbone(strategy: BackboneStrategy) -> nx.Graph:
 
     return provider.get_graph()
 
-backbones = 100
+backbones = 1000
 random_backbones = []
 
 ps = [p for p in np.linspace(0, 1, 100)]
@@ -137,23 +137,54 @@ for (i, p) in enumerate(ps):
     order_std_devs.append(3 * order_std_dev)
     total_strength_std_devs.append(3 * total_strength_std_dev)
 
-plot.subplot(1, 3, 1)
+plot.clf()
+
+# plot.subplot(1, 3, 1)
 plot.plot(ps, a_sizes)
 plot.plot(ps, r_sizes)
 plot.errorbar(ps, a_sizes, yerr = size_std_devs, fmt = "none")
-plot.legend(["mean", "real"])
 
-plot.subplot(1, 3, 2)
+plot.title("Backbone Size vs p-value")
+plot.legend(["Random data", "Real data"])
+plot.ylabel("Graph Size")
+plot.xlabel("p-value")
+
+plot.xticks(np.linspace(0, 1, 11))
+plot.grid()
+
+plot.show()
+
+plot.clf()
+# plot.subplot(1, 3, 2)
+
 plot.plot(ps, a_orders)
 plot.plot(ps, r_orders)
 plot.errorbar(ps, a_orders, yerr = order_std_devs, fmt = "none")
-plot.legend(["mean", "real"])
 
-plot.subplot(1, 3, 3)
+plot.title("Backbone Order vs p-value")
+plot.legend(["Random data", "Real data"])
+plot.ylabel("Graph Order")
+plot.xlabel("p-value")
+
+plot.xticks(np.linspace(0, 1, 11))
+plot.grid()
+
+plot.show()
+
+plot.clf()
+# plot.subplot(1, 3, 3)
+
 plot.plot(ps, a_total_strengths)
 plot.plot(ps, r_total_strengths)
 plot.errorbar(ps, a_total_strengths, yerr = total_strength_std_devs, fmt = "none")
-plot.legend(["mean", "real"])
+
+plot.title("Backbone Total Strength vs p-value")
+plot.legend(["Random data", "Real data"])
+plot.ylabel("Graph Total Strength")
+plot.xlabel("p-value")
+
+plot.xticks(np.linspace(0, 1, 11))
+plot.grid()
 
 # plot.xticks(np.linspace(0, 1, 11))
 # plot.grid()
