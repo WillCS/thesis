@@ -15,12 +15,29 @@ from backbones.backbone import BackboneStrategy
 from common.progress_bar import print_progress_bar
 from data      import GeneticDataProvider, RandomGeneticDataProvider, MiscDataProvider, genetic_data_provider
 
-# genetic_data_provider = MiscDataProvider("resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_matrix.csv")
-genetic_data_provider = GeneticDataProvider()
-graph_n = 71
+collapsed = True
+
+if collapsed:
+    genetic_data_provider = MiscDataProvider("resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_matrix.csv",
+        vertex_name_row = False,
+        directed        = False,
+        absolute        = True
+    )
+    graph_n = 44
+else:
+    genetic_data_provider = GeneticDataProvider()
+    graph_n = 71
+
 backbone_strategy = DisparityBackboneStrategy()
 
 genetic_graph = backbone_strategy.extract_backbone(genetic_data_provider.get_graph())
+
+ps = [p for p in np.linspace(0, 0.2, 50)]
+
+plot_xticks = np.linspace(0, 0.2, 11)
+
+backbones = 1000
+random_backbones = []
 
 def plot_weights(graph, p = 0.1):
     weights = [ graph[u][v]["weight"] for (u, v) in graph.edges if graph[u][v]["p"] < p]
@@ -66,12 +83,58 @@ def order(graph: nx.Graph, p = 0.1) -> int:
     return order
 
 def total_strength(graph: nx.Graph, p = 0.1) -> float:
-    strength = 0
+    strength_sum = 0
+
+    for v in graph.nodes:
+        strength = 0
+        for u in graph[v]:
+            if graph[v][u]["p"] < p:
+                strength += graph[v][u]["weight"]
+
+        strength_sum += strength
+
+    return strength_sum
+
+def average_strength(graph: nx.Graph, p = 0.1) -> float:
+    strength_sum = 0
+    vertices     = 0
+
+    for v in graph.nodes:
+        strength = 0
+        for u in graph[v]:
+            if graph[v][u]["p"] < p:
+                strength += graph[v][u]["weight"]
+
+        strength_sum += strength
+        vertices     += 1
+
+    return strength_sum / vertices
+
+def average_degree(graph: nx.Graph, p = 0.1) -> float:
+    degree_sum = 0
+    vertices     = 0
+
+    for v in graph.nodes:
+        degree = 0
+        for u in graph[v]:
+            if graph[v][u]["p"] < p:
+                degree += 1
+
+        degree_sum += degree
+        vertices   += 1
+
+    return degree_sum / vertices
+
+def average_edge_weight(graph: nx.Graph, p = 0.1) -> float:
+    weight_sum = 0
+    edges      = 0
+
     for (v, u) in graph.edges:
         if graph[v][u]["p"] < p:
-            strength += graph[v][u]["weight"]
+            weight_sum += graph[v][u]["weight"]
+            edges      += 1
 
-    return strength
+    return 0 if edges == 0 else weight_sum / edges
 
 def power_law(x, a, b):
     return a * np.power(x, b)
@@ -102,13 +165,20 @@ def fit_power_law(graph: nx.Graph, p: float = 0.1, should_plot = False, degree =
     amplitude = 10 ** out[0][0]
 
     if should_plot:
-        plot.plot(xs, power_law(xs, amplitude, exponent))
+        pw_law = np.array(power_law(xs, amplitude, exponent))
+        np_seq  = np.array(seq)
+        errorbars = pw_law - np_seq
+        errorbars = np.array([[max(e, 0) for e in errorbars], [-min(e, 0) for e in errorbars]])
+
+        plot.plot(xs, pw_law)
         plot.scatter(xs, seq)
+        plot.errorbar(xs, pw_law, yerr = errorbars, fmt = "none")
+        plot.xlabel("Position")
+        plot.ylabel("Degree" if degree else "Strength")
+        plot.title(f"{'Degree' if degree else 'Strength'} Sequence vs Fitted Power Law at p = {p}")
         plot.show()
 
     return exponent
-
-ps = [p for p in np.linspace(0, 1, 100)]
 
 def get_exponents(graph: nx.Graph, ps: List[float], degree = True) -> List[float]:
     return [fit_power_law(graph, p, degree = degree) for p in ps]
@@ -130,9 +200,6 @@ def get_random_backbone(strategy: BackboneStrategy) -> nx.Graph:
     provider.apply_backbone_strategy(strategy)
 
     return provider.get_graph()
-
-backbones = 1000
-random_backbones = []
 
 for i in range(backbones):
     print_progress_bar(f"Computing backbone", i + 1, backbones)
@@ -180,15 +247,15 @@ def plot_sequence(degree = True):
     plot.fill_between(ps[diff:], m_exps + std_devs, m_exps - std_devs, alpha = 0.2)
     plot.plot(ps, real_exponents)
 
-    plot.title(f"Exponent of Power Law Fitted to {'Degree' if degree else'Strength'} Sequence")
+    plot.title(f"Exponent of Power Law Fitted to {'Degree' if degree else 'Strength'} Sequence")
     plot.legend(["Random data", "Real data", "3σ"])
     plot.ylabel("Exponent")
     plot.xlabel("p-value")
 
-    plot.xticks(np.linspace(0, 1, 11))
+    plot.xticks(plot_xticks)
     plot.grid()
 
-    slice = 10
+    slice = 25
 
     plot.show()
     # plot.subplot(2, 1, 2)
@@ -202,7 +269,7 @@ def plot_sequence(degree = True):
 
     plot.ylim(y_min, y_max)
 
-    plot.title(f"Exponents of {backbones} Power Laws Fitted to {'Degree' if degree else'Strength'} Sequences")
+    plot.title(f"Exponents of {backbones} Power Laws Fitted to {'Degree' if degree else 'Strength'} Sequences - p = {ps[slice]:.2f}")
     plot.legend(["Random data", "Real data"])
     plot.ylabel("Occurrences")
     plot.xlabel("Exponent")
@@ -211,105 +278,55 @@ def plot_sequence(degree = True):
 
     plot.show()
 
-def plot_graph_properties():
-    r_sizes           = [size(genetic_graph, p) for p in ps]
-    r_orders          = [order(genetic_graph, p) for p in ps]
-    r_total_strengths = [total_strength(genetic_graph, p) for p in ps]
-
-    sizes           = [[] for _ in ps]
-    orders          = [[] for _ in ps]
-    total_strengths = [[] for _ in ps]
-
-    a_sizes           = []
-    a_orders          = []
-    a_total_strengths = []
-
-    size_std_devs           = []
-    order_std_devs          = []
-    total_strength_std_devs = []
+def plot_graph_property(prop, name: str):
+    real_values   = [prop(genetic_graph, p) for p in ps]
+    random_values = [[] for _ in ps]
+    mean_values   = []
+    std_devs      = []
 
     for (i, p) in enumerate(ps):
-        print_progress_bar(f"Computing graph properties", i + 1, len(ps))
+        print_progress_bar(f"Computing {name}", i + 1, len(ps))
 
         for backbone in random_backbones:
-            sizes[i].append(size(backbone, p))
-            orders[i].append(order(backbone, p))
-            total_strengths[i].append(total_strength(backbone, p))
+            random_values[i].append(prop(backbone, p))
 
-        m_size,           size_std_dev           = estimate_distribution(sizes[i])
-        m_order,          order_std_dev          = estimate_distribution(orders[i])
-        m_total_strength, total_strength_std_dev = estimate_distribution(total_strengths[i])
+        mean_value, std_dev = estimate_distribution(random_values[i])
+        mean_values.append(mean_value)
+        std_devs.append(3 * std_dev)
 
-        a_sizes.append(m_size)
-        a_orders.append(m_order)
-        a_total_strengths.append(m_total_strength)
-
-        size_std_devs.append(3 * size_std_dev)
-        order_std_devs.append(3 * order_std_dev)
-        total_strength_std_devs.append(3 * total_strength_std_dev)
-
-    np_ssd = np.array(size_std_devs)
-    np_osd = np.array(order_std_devs)
-    np_tsd = np.array(total_strength_std_devs)
-
-    np_s = np.array(a_sizes)
-    np_o = np.array(a_orders)
-    np_t = np.array(a_total_strengths)
+    np_mean_values = np.array(mean_values)
+    np_std_devs    = np.array(std_devs)
 
     plot.clf()
 
-    # plot.subplot(1, 3, 1)
-    plot.plot(ps, a_sizes)
-    plot.plot(ps, r_sizes)
-    plot.fill_between(ps, np_s + np_ssd, np_s - np_ssd, alpha = 0.2)
+    plot.plot(ps, mean_values)
+    plot.plot(ps, real_values)
+    plot.fill_between(ps, np_mean_values + np_std_devs, np_mean_values - np_std_devs, alpha = 0.2)
 
-    plot.title("Backbone Size vs p-value")
+    plot.title(f"{name} vs p-value")
     plot.legend(["Random data", "Real data", "3σ"])
-    plot.ylabel("Graph Size")
+    plot.ylabel(name)
     plot.xlabel("p-value")
 
-    plot.xticks(np.linspace(0, 1, 11))
+    plot.xticks(plot_xticks)
     plot.grid()
 
     plot.show()
 
-    plot.clf()
-    # plot.subplot(1, 3, 2)
+fit_power_law(genetic_graph, p = 0.1,  should_plot = True, degree = True)
+fit_power_law(genetic_graph, p = 0.15, should_plot = True, degree = True)
+fit_power_law(genetic_graph, p = 0.5,  should_plot = True, degree = True)
 
-    plot.plot(ps, a_orders)
-    plot.plot(ps, r_orders)
-    plot.fill_between(ps, np_o + np_osd, np_o - np_osd, alpha = 0.2)
+fit_power_law(genetic_graph, p = 0.1,  should_plot = True, degree = False)
+fit_power_law(genetic_graph, p = 0.15, should_plot = True, degree = False)
+fit_power_law(genetic_graph, p = 0.5,  should_plot = True, degree = False)
 
-    plot.title("Backbone Order vs p-value")
-    plot.legend(["Random data", "Real data", "3σ"])
-    plot.ylabel("Graph Order")
-    plot.xlabel("p-value")
+plot_sequence(degree = True)
+plot_sequence(degree = False)
 
-    plot.xticks(np.linspace(0, 1, 11))
-    plot.grid()
-
-    plot.show()
-
-    plot.clf()
-    # plot.subplot(1, 3, 3)
-
-    plot.plot(ps, a_total_strengths)
-    plot.plot(ps, r_total_strengths)
-    plot.fill_between(ps, np_t + np_tsd, np_t - np_tsd, alpha = 0.2)
-
-    plot.title("Backbone Total Strength vs p-value")
-    plot.legend(["Random data", "Real data", "3σ"])
-    plot.ylabel("Graph Total Strength")
-    plot.xlabel("p-value")
-
-    plot.xticks(np.linspace(0, 1, 11))
-    plot.grid()
-
-    # plot.xticks(np.linspace(0, 1, 11))
-    # plot.grid()
-
-    plot.show()
-
-plot_sequence(True)
-plot_sequence(False)
-plot_graph_properties()
+plot_graph_property(size,                "Backbone Size")
+plot_graph_property(order,               "Backbone Order")
+plot_graph_property(total_strength,      "Backbone Total Strength")
+plot_graph_property(average_strength,    "Backbone Average Strength")
+plot_graph_property(average_degree,      "Backbone Average Degree")
+plot_graph_property(average_edge_weight, "Backbone Average Edge Weight")

@@ -19,7 +19,7 @@ def get_graph_from_csv_adjacency_matrix(filename: str, directed: bool = False, v
                 col_index = 0
                 for col in row:
                     val = float(col)
-                    if val != 0:
+                    if val != 0 and row_index != col_index:
                         if absolute:
                             graph.add_edge(vertex_names[row_index], vertex_names[col_index], weight = abs(val))
                         else:
@@ -33,7 +33,7 @@ def get_graph_from_csv_adjacency_matrix(filename: str, directed: bool = False, v
                 col_index = 0
                 for col in row:
                     val = float(col)
-                    if val != 0:
+                    if val != 0 and row_index != col_index:
                         if absolute:
                             graph.add_edge(row_index, col_index, weight = abs(val))
                         else:

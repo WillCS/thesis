@@ -10,8 +10,8 @@ from .csv_adjacency import get_graph_from_csv_adjacency_matrix
 from .data_provider import DataProvider, Label
 
 class MiscDataProvider(DataProvider):
-    def __init__(self, adjacency_matrix_file: str) -> MiscDataProvider:
-        self.graph = get_graph_from_csv_adjacency_matrix(adjacency_matrix_file, vertex_name_row = False)
+    def __init__(self, adjacency_matrix_file: str, **kwargs) -> MiscDataProvider:
+        self.graph = get_graph_from_csv_adjacency_matrix(adjacency_matrix_file, **kwargs)
 
     def get_graph(self) -> nx.Graph:
         return self.graph
