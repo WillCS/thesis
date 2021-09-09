@@ -131,15 +131,19 @@ class PlotBuilder():
 
         self.visualisation.draw(self.ax, **self.plot_args)
 
-    def draw(self, **kwargs) -> None:
+    def draw(self,
+        xlim: Tuple[float, float] = (-1, 1),
+        ylim: Tuple[float, float] = (-1, 1),
+        **kwargs
+    ) -> None:
         """
         This draw method should only be called once, when
         the visualisation is first shown. It sets up the
         initial limits of the canvas, draws the plot, and
         then shows the plot window.
         """
-        self.ax.set_xlim((-1.1, 1.1))
-        self.ax.set_ylim((-1.1, 1.1))
+        self.ax.set_xlim(xlim)
+        self.ax.set_ylim(ylim)
         self.plot_args = kwargs
 
         self.redraw()

@@ -5,6 +5,8 @@ from os import path
 import pandas   as pd
 import networkx as nx
 
+
+
 def get_us_airport_dataset(year: int) -> pd.DataFrame:
     return pd.read_csv(f"./resources/us_airport_{year}.csv")
 
