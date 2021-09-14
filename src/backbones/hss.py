@@ -39,8 +39,8 @@ class HighSalienceSkeletonBackboneStrategy(BackboneStrategy):
             for u in proximity_graph[v]
         }
 
-        for (v, u) in graph:
-            graph[v][u]["salience"] = salience[v,u]["weight"]
+        for (v, u) in graph.edges:
+            graph[v][u]["salience"] = salience[v,u]
 
         return graph
 

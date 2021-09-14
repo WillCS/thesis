@@ -36,7 +36,7 @@ ps = [p for p in np.linspace(0, 0.2, 50)]
 
 plot_xticks = np.linspace(0, 0.2, 11)
 
-backbones = 1000
+backbones = 2
 random_backbones = []
 
 def plot_weights(graph, p = 0.1):
@@ -95,9 +95,11 @@ def total_strength(graph: nx.Graph, p = 0.1) -> float:
 
     return strength_sum
 
+def mean_maybe_empty(sample: List[float]) -> float:
+    return 0 if len(sample) == 0 else mean(sample)
+
 def average_strength(graph: nx.Graph, p = 0.1) -> float:
-    strength_sum = 0
-    vertices     = 0
+    strengths = []
 
     for v in graph.nodes:
         strength = 0
@@ -105,36 +107,32 @@ def average_strength(graph: nx.Graph, p = 0.1) -> float:
             if graph[v][u]["p"] < p:
                 strength += graph[v][u]["weight"]
 
-        strength_sum += strength
-        vertices     += 1
+        if strength > 0:
+            strengths.append(strength)
 
-    return strength_sum / vertices
+    return mean_maybe_empty(strengths)
 
 def average_degree(graph: nx.Graph, p = 0.1) -> float:
-    degree_sum = 0
-    vertices     = 0
+    degrees = []
 
     for v in graph.nodes:
         degree = 0
         for u in graph[v]:
             if graph[v][u]["p"] < p:
                 degree += 1
+        if degree > 0:
+            degrees.append(degree)
 
-        degree_sum += degree
-        vertices   += 1
-
-    return degree_sum / vertices
+    return mean_maybe_empty(degrees)
 
 def average_edge_weight(graph: nx.Graph, p = 0.1) -> float:
-    weight_sum = 0
-    edges      = 0
+    edge_weights = []
 
     for (v, u) in graph.edges:
         if graph[v][u]["p"] < p:
-            weight_sum += graph[v][u]["weight"]
-            edges      += 1
+            edge_weights.append(graph[v][u]["weight"])
 
-    return 0 if edges == 0 else weight_sum / edges
+    return mean_maybe_empty(edge_weights)
 
 def power_law(x, a, b):
     return a * np.power(x, b)
