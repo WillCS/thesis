@@ -1,7 +1,9 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from statistics import mean, stdev
 
 import networkx as nx
+from networkx.classes.function import degree
+from networkx.generators import degree_seq
 import numpy    as np
 
 from scipy.optimize.minpack import leastsq
@@ -34,6 +36,23 @@ def strength_sequence(
             weights[u] += weight
 
     return [x for x in sorted(weights.values(), reverse = True) if x > 0]
+
+def degree_distribution(
+    graph:     nx.Graph,
+    p:         float = 0.1,
+    attribute: str   = "p"
+) -> Dict[int, float]:
+    sequence    = degree_sequence(graph, p, attribute)
+    n           = len(sequence)
+    occurrences = {}
+
+    for d in sequence:
+        if d not in occurrences:
+            occurrences[d] = 0
+
+        occurrences[d] += 1
+
+    return {d: o / n for (d, o) in occurrences.items()}
 
 def size(
     graph:     nx.Graph,

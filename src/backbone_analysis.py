@@ -16,7 +16,8 @@ from analysis  import (
     degree_sequence_exponents,
     plot_means_and_stdevs,
     scatter_seq,
-    plot_line
+    plot_line,
+    degree_distribution
 )
 
 data_provider     = GeneticDataProvider()
@@ -37,6 +38,11 @@ else:
     data_provider = GeneticDataProvider()
     graph_n = 71
 
+# dist = degree_distribution(backbone, 0.3)
+
+# scatter_seq(dist.keys(), dist.values())
+# plot.show()
+# exit()
 random_backbones = [backbone_strategy.extract_backbone(RandomGeneticDataProvider(n = graph_n).get_graph()) for _ in range(n_backbones)]
 ps = [p for p in np.linspace(0, 1, 100)]
 

@@ -14,7 +14,8 @@ from .measures import (
     degree_sequence_power_law_exponent,
     degree_sequence_exponents,
     strength_sequence_power_law_exponent,
-    strength_sequence_exponents
+    strength_sequence_exponents,
+    degree_distribution
 )
 from .plot import (
     plot_graph_property,
