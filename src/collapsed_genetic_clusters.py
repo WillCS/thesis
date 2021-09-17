@@ -2,10 +2,13 @@ from backbones import DisparityBackboneStrategy
 from data      import get_multiple_clusterings_from_csv, GeneticDataProvider
 from plot      import PlotBuilder, RadialVisualisation
 
-data_provider = GeneticDataProvider()
-clusterings   = get_multiple_clusterings_from_csv("./resources/plant_genetics/ATvAC_contrast6_ATcorr_clusters.csv",
-        vertex_col  = "gene_num",
-        cluster_cols = [f"n{n}" for n in range(2,33)]
+ADJACENCY_MATRIX_FILE = "./resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_matrix.csv"
+
+data_provider = GeneticDataProvider(sourcefile = ADJACENCY_MATRIX_FILE)
+
+clusterings   = get_multiple_clusterings_from_csv("./resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_clusters.csv",
+        vertex_col  = "family",
+        cluster_cols = [f"n{n}" for n in range(2,31)]
 )
 
 # backbone_strategy = PolyaBackboneStrategy(a = 1, integer_weights = True)

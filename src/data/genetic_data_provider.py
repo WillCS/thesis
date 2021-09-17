@@ -11,9 +11,6 @@ from common import Clustering, strength
 from .csv_adjacency import get_graph_from_csv_adjacency_matrix
 from .data_provider import DataProvider, Label
 
-ADJACENCY_MATRIX_FILE = "./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv"
-FAMILY_FILE           = "./resources/plant_genetics/AT_gene_family_2021-08-04.csv"
-
 def filtered_strength(v, graph: nx.Graph, edges: List) -> float:
     if edges is None:
         return strength(graph, v)
@@ -22,9 +19,9 @@ def filtered_strength(v, graph: nx.Graph, edges: List) -> float:
             graph[x][y]["weight"] for (x, y) in edges if x == v or x == y
         ])
 
-def get_vertex_names() -> Dict[str, str]:
+def get_vertex_names(source: str) -> Dict[str, str]:
     names = {}
-    with open(FAMILY_FILE) as csvfile:
+    with open(source) as csvfile:
         reader = DictReader(csvfile)
 
         for row in reader:
@@ -33,10 +30,13 @@ def get_vertex_names() -> Dict[str, str]:
     return names
 
 class GeneticDataProvider(DataProvider):
-    def __init__(self) -> GeneticDataProvider:
-        self.graph = get_graph_from_csv_adjacency_matrix(ADJACENCY_MATRIX_FILE, absolute = True)
+    def __init__(self, sourcefile: str, namefile: Optional[str] = None) -> GeneticDataProvider:
+        self.graph = get_graph_from_csv_adjacency_matrix(sourcefile, absolute = True)
 
-        self.names = get_vertex_names()
+        if namefile:
+            self.names = get_vertex_names(namefile)
+        else:
+            self.names = {v: n for (n, v) in enumerate(self.graph.nodes)}
 
     def get_graph(self) -> nx.Graph:
         return self.graph

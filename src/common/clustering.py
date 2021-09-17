@@ -36,6 +36,15 @@ class Clustering():
         else:
             return None
 
+    def co_clustered(self, v, u) -> bool:
+        c_v = self.get_cluster_of(v)
+        c_u = self.get_cluster_of(u)
+
+        if c_v is not None:
+            return c_v == c_u
+        else:
+            return False
+
     def get_cluster_named(self, c) -> Optional[int]:
         """
         Get the cluster with the given name,

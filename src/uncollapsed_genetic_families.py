@@ -2,7 +2,11 @@ from backbones import DisparityBackboneStrategy
 from data      import get_clusters_from_csv, GeneticDataProvider
 from plot      import PlotBuilder, RadialVisualisation
 
-data_provider = GeneticDataProvider()
+ADJACENCY_MATRIX_FILE = "./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv"
+FAMILY_FILE           = "./resources/plant_genetics/AT_gene_family_2021-08-04.csv"
+
+data_provider = GeneticDataProvider(sourcefile = ADJACENCY_MATRIX_FILE, namefile = FAMILY_FILE)
+
 clusterings   = get_clusters_from_csv("./resources/plant_genetics/AT_gene_family_2021-08-04.csv",
     vertex_col  = "gene_num",
     cluster_col = "cl"
