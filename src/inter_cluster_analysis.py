@@ -44,10 +44,12 @@ backbone_strategy = DisparityBackboneStrategy()
 
 if collapsed:
     backbone    = backbone_strategy.extract_backbone(collapsed_data_provider.get_graph())
+    # clusterings = collapsed_clusterings
     clusterings = {n: c for (n, c) in collapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 30]}
 else:
     backbone    = backbone_strategy.extract_backbone(uncollapsed_data_provider.get_graph())
-    clusterings = {n: c for (n, c) in uncollapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 32]}
+    # clusterings = uncollapsed_clusterings
+    # clusterings = {n: c for (n, c) in uncollapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 32]}
 
 inter_counts = {c: [] for c in clusterings.keys()}
 intra_counts = {c: [] for c in clusterings.keys()}
@@ -79,17 +81,18 @@ for (n, c) in clusterings.items():
     inter_counts[n] = inter_count
     intra_counts[n] = intra_count
 
-legend = [n for n in clusterings.keys()]
+legend = [n[1:] for n in clusterings.keys()]
 
 for series in intra_counts.values():
     plt.plot(ps, series)
 
-plt.title("Fraction of intra-cluster edges in " + ("collapsed" if collapsed else "uncollapsed") + " backbones")
-plt.xlabel("p")
+plt.title("Fraction of intra-cluster edges in backbones vs $p$-value")
+plt.xlabel("$$p$$")
 plt.ylabel("Fraction of intra-cluster edges")
-plt.legend(legend)
+plt.legend(legend, title = "Clusters")
 plt.xticks(np.linspace(0, 1, 11))
-plt.yticks(np.linspace(0, 1, 11))
+# plt.yticks(np.linspace(0, 1, 11))
 plt.grid()
 plt.show()
 
+# plt.savefig("intra_cluster_edges.svg", bbox_inches = "tight")

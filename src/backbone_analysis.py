@@ -20,29 +20,31 @@ from analysis  import (
     degree_distribution
 )
 
-data_provider     = GeneticDataProvider()
 backbone_strategy = DisparityBackboneStrategy()
-backbone          = backbone_strategy.extract_backbone(data_provider.get_graph())
 
-collapsed   = False
+collapsed   = True
 n_backbones = 10
 
 if collapsed:
-    data_provider = MiscDataProvider("resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_matrix.csv",
-        vertex_name_row = False,
-        directed        = False,
-        absolute        = True
-    )
+    source = "resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_matrix.csv"
     graph_n = 44
 else:
-    data_provider = GeneticDataProvider()
+    source = "./resources/plant_genetics/ATvAC_contrast6_ATcorr_matrix.csv"
     graph_n = 71
 
-# dist = degree_distribution(backbone, 0.3)
+data_provider = GeneticDataProvider(sourcefile = source)
+backbone      = backbone_strategy.extract_backbone(data_provider.get_graph())
 
-# scatter_seq(dist.keys(), dist.values())
-# plot.show()
-# exit()
+dist = degree_distribution(backbone, 0.5)
+
+scatter_seq(dist.keys(), dist.values())
+plot.xlabel("Degree")
+plot.ylabel("Probability")
+plot.title("Degree Distribution of vertices in backbone with $p = 0.5$")
+# plot.xticks(np.linspace(1,4,4))
+plot.grid()
+plot.show()
+exit()
 random_backbones = [backbone_strategy.extract_backbone(RandomGeneticDataProvider(n = graph_n).get_graph()) for _ in range(n_backbones)]
 ps = [p for p in np.linspace(0, 1, 100)]
 
