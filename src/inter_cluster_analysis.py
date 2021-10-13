@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from backbones import DisparityBackboneStrategy
 from data      import get_multiple_clusterings_from_csv, GeneticDataProvider
 
-collapsed = True
+collapsed = False
 
 collapsed_matrix   = "./resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_matrix.csv"
 collapsed_clusters = "./resources/plant_genetics/ATvAC_collapsed_contrast6_ATcorr_clusters.csv"
@@ -49,7 +49,7 @@ if collapsed:
 else:
     backbone    = backbone_strategy.extract_backbone(uncollapsed_data_provider.get_graph())
     # clusterings = uncollapsed_clusterings
-    # clusterings = {n: c for (n, c) in uncollapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 32]}
+    clusterings = {n: c for (n, c) in uncollapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 32]}
 
 inter_counts = {c: [] for c in clusterings.keys()}
 intra_counts = {c: [] for c in clusterings.keys()}

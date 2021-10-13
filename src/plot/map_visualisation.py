@@ -58,6 +58,7 @@ class MapVisualisation(Visualisation):
             max_weight = max([self.get_graph()[v][u]["weight"] for (v, u) in self.edges])
 
         self.normalised_edge_weights = list([self.get_graph()[v][u]["weight"] / max_weight for (v, u) in self.edges])
+        self.normalised_edge_weights = list([0.1 + 0.9 * x for x in self.normalised_edge_weights])
 
     def draw(self, ax: plot.Axes, **kwargs) -> None:
         self.update()

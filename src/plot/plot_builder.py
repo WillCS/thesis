@@ -111,29 +111,32 @@ class PlotBuilder():
 
         return self
 
-    def redraw(self) -> None:
+    def redraw(self, clear = True) -> None:
         """
         This draw method actually draws the visualisation, and
         should be called if it needs to be updated once the plot
         window is already opened.
         """
-        xlim = self.ax.get_xlim()
-        ylim = self.ax.get_ylim()
-        
-        # By saving the canvas limits before we clear it,
-        # we can set them again afterwards, keeping
-        # any zooming in or out that might have been done
+        if clear:
+            xlim = self.ax.get_xlim()
+            ylim = self.ax.get_ylim()
+            
+            # By saving the canvas limits before we clear it,
+            # we can set them again afterwards, keeping
+            # any zooming in or out that might have been done
+            
+            self.ax.clear()
 
-        self.ax.clear()
-
-        self.ax.set_xlim(xlim)
-        self.ax.set_ylim(ylim)
+            self.ax.set_xlim(xlim)
+            self.ax.set_ylim(ylim)
 
         self.visualisation.draw(self.ax, **self.plot_args)
 
     def draw(self,
         xlim: Tuple[float, float] = (-1, 1),
         ylim: Tuple[float, float] = (-1, 1),
+        show  = True,
+        clear = False,
         **kwargs
     ) -> None:
         """
@@ -146,6 +149,7 @@ class PlotBuilder():
         self.ax.set_ylim(ylim)
         self.plot_args = kwargs
 
-        self.redraw()
+        self.redraw(clear)
 
-        plot.show()
+        if show:
+            plot.show()
