@@ -2,6 +2,7 @@ from backbones import DisparityBackboneStrategy
 from data      import get_multiple_clusterings_from_csv, GeneticDataProvider
 from plot      import PlotBuilder, RadialVisualisation
 
+from matplotlib import pyplot as plt
 
 sample_num = 17
 matrix_filename_base   = f"./resources/plant_genetics/random_2021-09-27/corr_random_{sample_num}.csv"
@@ -67,6 +68,20 @@ plot_builder.add_slider(
     valfmt    = "%i"
 )
 
+# edges = [(v, u) for (v, u) in data_provider.graph.edges if data_provider.graph[v][u]["p"] < 0.15]
+# visualisation.set_edges_to_display(edges)
+# visualisation.set_clusters(clusterings[f"n32"])
+
+# plot_builder.fig.set_size_inches(12, 12, forward = True)
+# for side in ["top", "right", "bottom", "left"]:
+#     plot_builder.ax.spines[side].set_visible(False)
+
+# plt.gca().set_axis_off()
+# plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
+# plt.margins(0,0)
+
 plot_builder.draw(
-    node_size   = 50
+    node_size   = 200,
+    xlim        = (-1.1, 1.1),
+    ylim        = (-1.1, 1.1)
 )

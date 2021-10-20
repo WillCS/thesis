@@ -28,7 +28,7 @@ uncollapsed_clusterings   = get_multiple_clusterings_from_csv(uncollapsed_cluste
         cluster_cols = [f"n{n}" for n in range(2,33)]
 )
 
-ps = np.linspace(0, 1, 100)
+ps = np.linspace(0, 0.5, 100)
 
 def get_remaining_edges(graph: nx.Graph, p: float = 0.1, attribute: str = "p") -> List[Tuple]:
     remaining_edges = []
@@ -48,8 +48,8 @@ if collapsed:
     clusterings = {n: c for (n, c) in collapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 30]}
 else:
     backbone    = backbone_strategy.extract_backbone(uncollapsed_data_provider.get_graph())
-    # clusterings = uncollapsed_clusterings
-    clusterings = {n: c for (n, c) in uncollapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 32]}
+    clusterings = uncollapsed_clusterings
+    # clusterings = {n: c for (n, c) in uncollapsed_clusterings.items() if int(n[1:]) in [2, 4, 8, 16, 32]}
 
 inter_counts = {c: [] for c in clusterings.keys()}
 intra_counts = {c: [] for c in clusterings.keys()}
@@ -83,15 +83,20 @@ for (n, c) in clusterings.items():
 
 legend = [n[1:] for n in clusterings.keys()]
 
-for series in intra_counts.values():
-    plt.plot(ps, series)
+fig = plt.figure(figsize = (8, 8))
+ax  = plt.subplot(111)
 
-plt.title("Fraction of intra-cluster edges in backbones vs $p$-value")
+for series in intra_counts.values():
+    ax.plot(ps, series)
+
+plt.title("Fraction of intra-cluster edges in backbones extracted from real genetic expression data vs $p$-value")
 plt.xlabel("$$p$$")
 plt.ylabel("Fraction of intra-cluster edges")
-plt.legend(legend, title = "Clusters")
-plt.xticks(np.linspace(0, 1, 11))
-# plt.yticks(np.linspace(0, 1, 11))
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
+ax.legend(legend, title = "Clusters", loc = "center left", bbox_to_anchor = (1, 0.5))
+plt.xticks(np.linspace(0, 0.5, 11))
+plt.yticks(np.linspace(0, 1, 11))
 plt.grid()
 plt.show()
 

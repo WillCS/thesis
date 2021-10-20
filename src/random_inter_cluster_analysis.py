@@ -18,10 +18,10 @@ def get_remaining_edges(graph: nx.Graph, p: float = 0.1, attribute: str = "p") -
 
     return remaining_edges
 
-ps = np.linspace(0, 1, 100)
+ps = np.linspace(0, 0.5, 100)
 intra_counts = {(f"n{c}", i): [] for c in range(2, 33) for i, _ in enumerate(ps)}
 
-for sample_num in [17]:#range(25, 26):
+for sample_num in range(1, 101):
     print_progress_bar("Sample", sample_num, 100)
     matrix_filename_base   = f"./resources/plant_genetics/random_2021-09-27/corr_random_{sample_num}.csv"
     cluster_filename_base = f"./resources/plant_genetics/random_2021-09-27/random_data_with_clusters_{sample_num}.csv"
@@ -61,15 +61,21 @@ for c in range(2, 33):
             series[c].append(mean(intra_counts[(f"n{c}", i)]))
 
 legend = [n[1:] for n in clusterings.keys()]
-for s in series.values():
-    plt.plot(ps, s)
 
-plt.title("Fraction of intra-cluster edges in backbones vs $p$-value")
+fig = plt.figure(figsize = (8, 8))
+ax  = plt.subplot(111)
+
+for s in series.values():
+    ax.plot(ps, s)
+
+plt.title("Fraction of intra-cluster edges in backbones extracted from random genetic expression data vs $p$-value")
 plt.xlabel("$$p$$")
 plt.ylabel("Fraction of intra-cluster edges")
-plt.legend(legend, title = "Clusters")
-plt.xticks(np.linspace(0, 1, 11))
-# plt.yticks(np.linspace(0, 1, 11))
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
+ax.legend(legend, title = "Clusters", loc = "center left", bbox_to_anchor = (1, 0.5))
+plt.xticks(np.linspace(0, 0.5, 11))
+plt.yticks(np.linspace(0, 1, 11))
 plt.grid()
 plt.show()
 
